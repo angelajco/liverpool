@@ -10,28 +10,30 @@ import { añade } from '../redux/reducer'
 import { Link } from 'react-router-dom';
 
 export default function Personaje(props) {
+    //Para traer los datos del store
     const dispatch = useDispatch()
     //Estado para mostrar el modal
     const [muestraModal, setMuestraModal] = useState(false)
 
     //Estado para guardar los personajes que vengan del JSON SERVER
     const [informacion, setInformacion] = useState([])
-
-    const [urlDato, setUrlDatos] = useState("")
-    //Se ejecuta cada vez que el filtro que se pasa por props cambia, si se da clic en los botones de filtro
     useEffect(() => {
-        //Por defecto muestra a los estudiantes
-        let url = "http://localhost:3001/hp-characters";
-        setUrlDatos(url)
-        //Se hace la petición
-        fetch(url)
-            .then(resp => resp.json())
-            .then(
-                (data) => setInformacion(data),
-                (error) => console.log(error)
-            )
-    }, [])
+        if (props.datos) {
+            setInformacion(props.datos)
+        } else {
+            //Por defecto muestra a todos los personajes
+            let url = "http://localhost:3001/hp-characters";
+            //Se hace la petición
+            fetch(url)
+                .then(resp => resp.json())
+                .then(
+                    (data) => setInformacion(data),
+                    (error) => console.log(error)
+                )
+        }
+    }, [props.datos])
 
+    //Añade al store la información del personaje
     const detallePersonaje = (personaje) => {
         dispatch(añade(personaje))
     }
@@ -48,10 +50,10 @@ export default function Personaje(props) {
 
             <div className="container">
                 <div className="row">
-                    {informacion.length !== 0 && (
+                    {informacion.length !== 0 ? (
                         informacion.map((dato, index) => (
                             <div key={index} className="col-3">
-                                <Link onClick={() => detallePersonaje(dato)} to={`/detalle/${dato.name.replace( /\s/g, '')}`}>
+                                <Link onClick={() => detallePersonaje(dato)} to={`/detalle/${dato.name.replace(/\s/g, '')}`}>
                                     <Figure>
                                         <Figure.Image
                                             width={200}
@@ -70,6 +72,10 @@ export default function Personaje(props) {
                                 </Link>
                             </div>
                         ))
+                    ) : (
+                        <div className="col-12">
+                            <b>No se ha encontrado ningun resultado con esos parametros. Intenta otra búsqueda</b>
+                        </div>
                     )}
                 </div>
             </div>
